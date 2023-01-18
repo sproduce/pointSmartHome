@@ -1,15 +1,29 @@
 #include "Arduino.h"
 #include <SPI.h>
 #include <mcp2515.h>
-//The setup function is called once at startup of the sketch
+
+
+uint8_t switchPosition = 0b01110011;
+struct can_frame canMsgSwitch;
+struct can_frame canMsgSystem;
+MCP2515 mcp2515(10);
+
+
 void setup()
 {
-	int test;
-// Add your initialization code here
+	canMsgSwitch.can_id = 0x0F6;
+	canMsgSwitch.can_dlc = 2;
+	canMsgSwitch.data[0] = 1;// current point for test. !!! read from EEPROM
+
+	mcp2515.reset();
+	mcp2515.setBitrate(CAN_125KBPS);
+	mcp2515.setNormalMode();
 }
 
-// The loop function is called in an endless loop
+
 void loop()
 {
-//Add your repeated code here
+	mcp2515.sendMessage(&canMsgSwitch);
+
+	delay(1000);
 }
