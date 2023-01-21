@@ -11,6 +11,7 @@ MCP2515 mcp2515(10);
 
 void setup()
 {
+
 	canMsgSwitch.can_id = 0x0F6;
 	canMsgSwitch.can_dlc = 2;
 	canMsgSwitch.data[0] = 1;// current point for test. !!! read from EEPROM
