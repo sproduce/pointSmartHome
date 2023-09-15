@@ -5,7 +5,7 @@
 //https://stackoverflow.com/questions/47981/how-do-i-set-clear-and-toggle-a-single-bit
 
 
-#define VERSION 1
+#define VERSION 2
 #define COUNT_BUTTONS 8
 #define COUNT_BUTTON_CHANNELS 8
 
