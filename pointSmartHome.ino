@@ -41,17 +41,49 @@ volatile bool canReceived = false;
 MCP2515 mcp2515(SPI_CS);
 can_frame canData;
 
+
+union _durationUnion
+{
+	uint32_t duration;
+	uint8_t durationByte[4];
+};
+
+
+
+struct _canChannel {
+	uint16_t id;
+	uint32_t duration;
+};
+
+
 struct button {
-	uint8_t channel = 0;
-	uint8_t status = false;
+	uint8_t channel;
+	_canChannel canChannel[COUNT_BUTTON_CHANNELS];
+	uint8_t status = 0;
 	uint32_t changeTime = 0;
+	uint32_t startTime = 0;
+	_durationUnion lastDuration = {0};
 } buttons[COUNT_BUTTONS];
 
 
+
+//struct sendCan {
+//	uint16_t canChannel;
+//	uint8_t status;
+//	uint32_t duration = 0;
+//} dataSend[64];
+
+
+
 uint16_t canChannel[COUNT_BUTTONS][COUNT_BUTTON_CHANNELS];
+
+
+
+
+
+
 uint16_t newChannel = 0;
-
-
+uint8_t startProgram = 1;
 
 void clearCanChannel()
 {
@@ -71,21 +103,21 @@ void addCanChannel(uint8_t button, uint16_t channel){
 }
 
 
-
 void sendCanChannel(uint8_t button){
 	for (uint8_t i = 0; i < COUNT_BUTTON_CHANNELS; i++){
-		//Serial.println(canChannel[button][i]);
 		if (canChannel[button][i]){
 			canData.can_id = canChannel[button][i];
-			canData.can_dlc = 1;
-			canData.data[0] = 0b01;
+			canData.can_dlc = 5;
+			canData.data[0] = buttons[button].status;
+			canData.data[1] = buttons[button].lastDuration.durationByte[0];
+			canData.data[2] = buttons[button].lastDuration.durationByte[1];
+			canData.data[3] = buttons[button].lastDuration.durationByte[2];
+			canData.data[4] = buttons[button].lastDuration.durationByte[3];
 			mcp2515.sendMessage(&canData);
-			delay(2);
+			delay(5);
 		}
 	}
 }
-
-
 
 
 void buttonsSetup(){
@@ -102,6 +134,7 @@ void buttonsSetup(){
 		buttons[i].status = !digitalRead(buttons[i].channel);
 	}
 }
+
 
 void canInterrupt(){
 	canReceived = true;
@@ -123,6 +156,7 @@ void canRead(){
 			//Serial.println("clearEeprom");
 			break;
 		case 0x707 : newChannel = 0;
+			startProgram = 1;
 			saveEeprom(canChannel);
 			//Serial.println("saveEeprom");
 			break;
@@ -137,25 +171,24 @@ void canRead(){
 
 
 
-bool buttonRead(struct button * currentButton) {
+bool buttonRead(struct button *currentButton) {
 
-uint8_t curretnStatus = !digitalRead(currentButton->channel);
+	uint8_t curretnStatus = !digitalRead(currentButton->channel);
 
 	if (curretnStatus != currentButton->status){
 		if (!currentButton->changeTime ) {
 			currentButton->changeTime = millis();
 		}
-		if (millis() - currentButton->changeTime > 100){
+		if (millis() - currentButton->changeTime > 50){
 			currentButton->changeTime = 0;
 			currentButton->status = curretnStatus;
+			currentButton->lastDuration = {millis() - currentButton->startTime};
+			currentButton->startTime = millis();
 			return true;
 		}
 	} else {
-		if (currentButton->changeTime > 110){
-			currentButton->changeTime = 0;
-		}
+		currentButton->changeTime = 0;
 	}
-
 
 	return false;
 }
@@ -164,13 +197,13 @@ uint8_t curretnStatus = !digitalRead(currentButton->channel);
 void setup()
 {
 	mcp2515.reset();
-	mcp2515.setBitrate(CAN_50KBPS);
+	mcp2515.setBitrate(CAN_250KBPS);
 	mcp2515.setConfigMode();
 	mcp2515.setFilterMask(MCP2515::MASK0, false, 0x400);
 	mcp2515.setFilter(MCP2515::RXF0, false, 0x400);
 	mcp2515.setFilterMask(MCP2515::MASK1, false, 0x7ff);
 	mcp2515.setNormalMode();
-	//Serial.begin(9600);
+	Serial.begin(9600);
 	pinMode(2, INPUT_PULLUP);
 	attachInterrupt(0, canInterrupt, FALLING);
 	buttonsSetup();
@@ -188,18 +221,16 @@ void loop()
 
 	for(uint8_t i = 0; i < COUNT_BUTTONS; i++){
 		if (buttonRead(&buttons[i])){
-
 			if (newChannel){
-				//Serial.println("button setup");
+				if (startProgram){
+					clearCanChannel();
+					startProgram = 0;
+				}
 				addCanChannel(i,newChannel);
 			} else {
 				sendCanChannel(i);
 			}
 		}
 	}
-
-
-
-
 
 }
