@@ -1,1 +1,1 @@
-# pointSmartHome
+# endPoint SmartHome
