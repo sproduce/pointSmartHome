@@ -108,7 +108,7 @@ void sendCanChannel(uint8_t button){
 		if (canChannel[button][i]){
 			canData.can_id = canChannel[button][i];
 			canData.can_dlc = 1;
-			canData.data[0] = 1;
+			canData.data[0] = buttons[button].status;
 			mcp2515.sendMessage(&canData);
 			delay(5);
 		}
