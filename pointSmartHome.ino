@@ -58,7 +58,7 @@ struct _canChannel {
 
 struct button {
 	uint8_t channel;
-	_canChannel canChannel[COUNT_BUTTON_CHANNELS];
+	//_canChannel canChannel[COUNT_BUTTON_CHANNELS];
 	uint8_t status = 0;
 	uint32_t changeTime = 0;
 	uint32_t startTime = 0;
@@ -107,12 +107,8 @@ void sendCanChannel(uint8_t button){
 	for (uint8_t i = 0; i < COUNT_BUTTON_CHANNELS; i++){
 		if (canChannel[button][i]){
 			canData.can_id = canChannel[button][i];
-			canData.can_dlc = 5;
-			canData.data[0] = buttons[button].status;
-			canData.data[1] = buttons[button].lastDuration.durationByte[0];
-			canData.data[2] = buttons[button].lastDuration.durationByte[1];
-			canData.data[3] = buttons[button].lastDuration.durationByte[2];
-			canData.data[4] = buttons[button].lastDuration.durationByte[3];
+			canData.can_dlc = 1;
+			canData.data[0] = 1;
 			mcp2515.sendMessage(&canData);
 			delay(5);
 		}
