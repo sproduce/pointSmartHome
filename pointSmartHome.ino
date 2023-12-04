@@ -5,7 +5,7 @@
 //https://stackoverflow.com/questions/47981/how-do-i-set-clear-and-toggle-a-single-bit
 
 
-#define VERSION 2
+#define VERSION 1
 #define COUNT_BUTTONS 8
 #define COUNT_BUTTON_CHANNELS 8
 
@@ -193,13 +193,13 @@ bool buttonRead(struct button *currentButton) {
 void setup()
 {
 	mcp2515.reset();
-	mcp2515.setBitrate(CAN_250KBPS);
+	mcp2515.setBitrate(CAN_80KBPS);
 	mcp2515.setConfigMode();
 	mcp2515.setFilterMask(MCP2515::MASK0, false, 0x400);
 	mcp2515.setFilter(MCP2515::RXF0, false, 0x400);
 	mcp2515.setFilterMask(MCP2515::MASK1, false, 0x7ff);
 	mcp2515.setNormalMode();
-	Serial.begin(9600);
+	//Serial.begin(9600);
 	pinMode(2, INPUT_PULLUP);
 	attachInterrupt(0, canInterrupt, FALLING);
 	buttonsSetup();
