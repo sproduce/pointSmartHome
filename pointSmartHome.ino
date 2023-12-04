@@ -1,4 +1,3 @@
-#include "Arduino.h"
 #include <SPI.h>
 #include <mcp2515.h>
 #include "eepromUtils.h"
