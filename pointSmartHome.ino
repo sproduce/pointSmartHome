@@ -106,10 +106,11 @@ void sendCanChannel(uint8_t button){
 	for (uint8_t i = 0; i < COUNT_BUTTON_CHANNELS; i++){
 		if (canChannel[button][i]){
 			canData.can_id = canChannel[button][i];
-			canData.can_dlc = 1;
+			canData.can_dlc = 2;
 			canData.data[0] = buttons[button].status;
+			canData.data[1] = 1;
 			mcp2515.sendMessage(&canData);
-			delay(5);
+			delay(15);
 		}
 	}
 }
@@ -192,7 +193,7 @@ bool buttonRead(struct button *currentButton) {
 void setup()
 {
 	mcp2515.reset();
-	mcp2515.setBitrate(CAN_80KBPS);
+	mcp2515.setBitrate(CAN_125KBPS);
 	mcp2515.setConfigMode();
 	mcp2515.setFilterMask(MCP2515::MASK0, false, 0x400);
 	mcp2515.setFilter(MCP2515::RXF0, false, 0x400);
@@ -212,6 +213,7 @@ void loop()
 	if (canReceived){
 		canReceived = false;
 		canRead();
+		mcp2515.clearInterrupts();
 	}
 
 	for(uint8_t i = 0; i < COUNT_BUTTONS; i++){
