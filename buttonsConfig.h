@@ -5,7 +5,7 @@
 #include <EEPROM.h>
 
 
-#define VERSION 2
+#define VERSION 1
 #define COUNT_BUTTONS 6
 #define COUNT_BUTTON_CHANNELS 8
 

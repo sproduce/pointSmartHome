@@ -1,7 +1,6 @@
 #include <SPI.h>
 #include <mcp2515.h>
 
-
 //https://stackoverflow.com/questions/47981/how-do-i-set-clear-and-toggle-a-single-bit
 
 #include "buttonsConfig.h"
