@@ -5,7 +5,7 @@
 #include <EEPROM.h>
 
 
-#define VERSION 2
+#define VERSION 1
 #define COUNT_BUTTONS 6
 #define COUNT_BUTTON_CHANNELS 8
 
@@ -52,6 +52,14 @@ struct _button {
 };
 
 
+void clearEeprom(){
+	for (uint16_t i = 0 ; i < EEPROM.length() ; i++) {
+	    EEPROM.write(i, 0);
+	  }
+}
+
+
+
 
 void readEeprom(_button *buttons)
 {
@@ -59,11 +67,11 @@ void readEeprom(_button *buttons)
 	for (uint8_t i = 0;i<COUNT_BUTTONS;i++){
 		for(uint8_t j = 0;j<COUNT_BUTTON_CHANNELS;j++){
 			EEPROM.get(saveByte,buttons[i].canChannel[j]);
-			saveByte +=2;
+			saveByte += 2;
 		}
 
 		EEPROM.get(saveByte,buttons[i].type);
-		saveByte +=1;
+		saveByte += 1;
 	}
 
 }

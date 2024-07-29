@@ -108,7 +108,9 @@ void canInterrupt(){
 void canRead(){
 	while (mcp2515.readMessage(&canData) == MCP2515::ERROR_OK) {
 		switch(canData.can_id) {
-		case 0x777 : clearCanChannel();
+		case 0x777 :
+			clearEeprom();
+			clearCanChannel();
 			//Serial.println("clearEeprom");
 			break;
 		case 0x707 : newChannel = 0;
