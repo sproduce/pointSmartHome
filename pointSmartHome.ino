@@ -51,23 +51,31 @@ void addCanChannel(_button *currentButton, uint16_t channel)
 
 
 void sendCanChannel(_button *currentButton){
+	//uint8_t error;
+
+	switch (currentButton->type){
+		case 1:
+			canData.data[0] = currentButton->status;
+		break;
+		case 2:
+			canData.data[0] = 3;
+			if (currentButton->lastDuration < 200){
+				return;
+			}
+		break;
+		case 3:
+			canData.data[0] = 2;
+		break;
+	}
+
 	for (uint8_t i = 0; i < COUNT_BUTTON_CHANNELS; i++){
 		if (currentButton->canChannel[i]){
 			canData.can_id = currentButton->canChannel[i];
 			canData.can_dlc = 1;
-			switch (currentButton->type)
-			{
-				case 1:
-					canData.data[0] = currentButton->status;
-				break;
-				case 2:
-					canData.data[0] = 2;
-				break;
-				case 3:
-					canData.data[0] = 2;
-				break;
-			}
 			mcp2515.sendMessage(&canData);
+			//Serial.println(error);
+			//if(error) mcp2515.reset();
+			//Serial.println(mcp2515.errorCountRX());
 			delay(1);
 		} else {
 			break;
@@ -154,6 +162,7 @@ bool buttonRead(_button *currentButton) {
 
 void setup()
 {
+	Serial.begin(9600);
 	mcp2515.reset();
 	mcp2515.setBitrate(CAN_125KBPS,MCP_8MHZ);
 	mcp2515.setConfigMode();

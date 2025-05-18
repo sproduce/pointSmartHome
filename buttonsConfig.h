@@ -5,7 +5,7 @@
 #include <EEPROM.h>
 
 
-#define VERSION 1
+#define VERSION 3
 #define COUNT_BUTTONS 6
 #define COUNT_BUTTON_CHANNELS 8
 
@@ -19,6 +19,20 @@
 	#define BUTTON_6 16 //a2
 	#define SPI_CS 3
 #endif
+
+
+#if VERSION == 3
+	#define BUTTON_1 6 //d6
+	#define BUTTON_2 7 //d7
+	#define BUTTON_3 8 //d8
+	#define BUTTON_4 14 //a0
+	#define BUTTON_5 15 //a1
+	#define BUTTON_6 9 //d9
+	#define SPI_CS 3
+#endif
+
+
+
 
 #if VERSION == 2
 	#define BUTTON_1 7 //d7
