@@ -5,7 +5,7 @@
 //https://stackoverflow.com/questions/47981/how-do-i-set-clear-and-toggle-a-single-bit
 
 #include "buttonsConfig.h"
-
+#include "temperature.h"
 
 volatile bool canReceived = false;
 MCP2515 mcp2515(SPI_CS);
@@ -14,7 +14,7 @@ _button buttons[COUNT_BUTTONS];
 
 uint16_t newChannel = 0;
 uint8_t startProgram = 1;
-
+uint8_t sensorType = 0;
 
 
 void clearCanChannel()
@@ -30,6 +30,8 @@ void clearCanChannel()
 
 void addCanChannel(_button *currentButton, uint16_t channel)
 {
+
+	// first init next  change status
 	uint8_t i;
 	for(i=0; i<COUNT_BUTTON_CHANNELS; i++){
 		if(channel == currentButton->canChannel[i]){
@@ -42,7 +44,7 @@ void addCanChannel(_button *currentButton, uint16_t channel)
 		}
 	}
 
-	for (i = COUNT_BUTTON_CHANNELS -1; i >0; i--){
+	for (i = COUNT_BUTTON_CHANNELS -1; i > 0; i--){
 		currentButton->canChannel[i] = currentButton->canChannel[i-1];
 	}
 	currentButton->type = 1; // set
@@ -73,9 +75,6 @@ void sendCanChannel(_button *currentButton){
 			canData.can_id = currentButton->canChannel[i];
 			canData.can_dlc = 1;
 			mcp2515.sendMessage(&canData);
-			//Serial.println(error);
-			//if(error) mcp2515.reset();
-			//Serial.println(mcp2515.errorCountRX());
 			delay(1);
 		} else {
 			break;
@@ -119,19 +118,17 @@ void canRead(){
 		case 0x777 :
 			clearEeprom();
 			clearCanChannel();
-			//Serial.println("clearEeprom");
 			break;
 		case 0x707 : newChannel = 0;
 			startProgram = 1;
 			saveEeprom(buttons);
-			//Serial.println("saveEeprom");
 			break;
 		case 0x700 :
-			//Serial.println(canData.data[0]);
 			newChannel = canData.data[0];
 			break;
 		}
 	}
+	mcp2515.clearRXnOVR();
 }
 
 
@@ -162,7 +159,6 @@ bool buttonRead(_button *currentButton) {
 
 void setup()
 {
-	Serial.begin(9600);
 	mcp2515.reset();
 	mcp2515.setBitrate(CAN_125KBPS,MCP_8MHZ);
 	mcp2515.setConfigMode();
@@ -173,11 +169,42 @@ void setup()
 	pinMode(2, INPUT_PULLUP);
 	attachInterrupt(0, canInterrupt, FALLING);
 	buttonsSetup();
+	sensorType = initTempSensor();
+	// set TEST CAN ID
+	//buttons[COUNT_BUTTONS - 1].canChannel[0] = 0x333;
+	//buttons[COUNT_BUTTONS - 1].type = 1;
+
 }
 
 
 void loop()
 {
+
+	if (sensorType && (millis() - lastCheckTemp >= TEMP_INTERVAL_CHECK)){
+		lastCheckTemp = millis();
+		storeRawAdc(analogRead(TEMP_SENSOR));
+
+		uint16_t medianAdc = getMedianAdc();
+
+		if (medianAdc){
+			int8_t celsiusTemp = convertAdcToCelsiusMath(medianAdc);
+			if (celsiusTemp > 26 && needTemp){
+				needTemp = 0;
+				buttons[COUNT_BUTTONS - 1].status = needTemp;
+				sendCanChannel(&buttons[COUNT_BUTTONS - 1]);
+			}
+			if (celsiusTemp < 24 && !needTemp){
+				needTemp = 1;
+				buttons[COUNT_BUTTONS - 1].status = needTemp;
+				sendCanChannel(&buttons[COUNT_BUTTONS - 1]);
+			}
+
+			buttons[COUNT_BUTTONS - 1].status = 0;
+		}
+
+	}
+
+
 
 	if (canReceived){
 		canReceived = false;

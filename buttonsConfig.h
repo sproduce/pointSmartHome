@@ -10,6 +10,8 @@
 #define COUNT_BUTTON_CHANNELS 8
 
 
+
+
 #if VERSION == 1
 	#define BUTTON_1 6 //d6
 	#define BUTTON_2 7 //d7
@@ -18,6 +20,7 @@
 	#define BUTTON_5 15 //a1
 	#define BUTTON_6 16 //a2
 	#define SPI_CS 3
+	#define TEMP_SENSOR 0
 #endif
 
 
@@ -29,6 +32,7 @@
 	#define BUTTON_5 15 //a1
 	#define BUTTON_6 9 //d9
 	#define SPI_CS 3
+	#define TEMP_SENSOR 16 //a2
 #endif
 
 
@@ -42,6 +46,7 @@
 	#define BUTTON_5 16 //a2
 	#define BUTTON_6 17 //a3
 	#define SPI_CS 10
+	#define TEMP_SENSOR 0
 #endif
 
 

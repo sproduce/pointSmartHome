@@ -2,12 +2,13 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2025-04-11 22:21:38
+//This file has been generated on 2026-10-20 00:33:24
 
 #include "Arduino.h"
 #include <SPI.h>
 #include <mcp2515.h>
 #include "buttonsConfig.h"
+#include "temperature.h"
 
 void clearCanChannel() ;
 void addCanChannel(_button *currentButton, uint16_t channel) ;
